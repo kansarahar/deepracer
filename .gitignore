@@ -1,4 +1,4 @@
 track_widths.npy
 *.png
-test/
+test*
 deprecated/
