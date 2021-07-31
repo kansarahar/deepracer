@@ -2,3 +2,4 @@ track_widths.npy
 *.png
 test*
 deprecated/
+notes.txt
