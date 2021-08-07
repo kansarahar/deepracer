@@ -5,6 +5,7 @@ track_widths = {
     'reinvent2018': 0.76,
     'carrera': 0.66,
     'cumulo': 0.90,
+    'shanghai': 0.76,
 }
 np.save('track_widths.npy', track_widths)
 

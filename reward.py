@@ -2,20 +2,20 @@ import numpy as np
 
 def reward_function(params):
 
-  # ----------------------------------------------------- #
+  # --------------------------- Weights --------------------------- #
 
   heading_weight = 30
   steering_weight = 20
   center_weight = 35
   speed_weight = 15
 
-  # ----------------------------------------------------- #
+  # ---------------------- Off-track Penalty ---------------------- #
 
   # Penalize if off track
   if not params['all_wheels_on_track']:
     return 1e-3
   
-  # ----------------------------------------------------- #
+  # --------------------------- Params --------------------------- #
 
   speed = params['speed']
   steering_angle = params['steering_angle']
@@ -25,7 +25,7 @@ def reward_function(params):
   closest_waypoints = params['closest_waypoints']
   waypoints = np.array(params['waypoints'])
   
-  # ----------------------------------------------------- #
+  # --------------------------- Heading --------------------------- #
 
   # calculate track direction angle
   track_vector = waypoints[closest_waypoints[1]]-waypoints[closest_waypoints[0]]
@@ -38,7 +38,7 @@ def reward_function(params):
   # when heading angle difference is 20, the reward is 1/e~0.37
   heading_reward = np.exp(-0.0025*heading_difference**2) if heading_difference < 45 else 0
 
-  # ----------------------------------------------------- #
+  # --------------------------- Steering --------------------------- #
 
   # reward if steering direction is the same as track direction
   steering_direction = steering_angle+heading_direction
@@ -48,22 +48,22 @@ def reward_function(params):
   # when steering angle difference is 20, the reward is 1/e~0.37
   steering_reward = np.exp(-0.0025*steering_difference**2) if steering_difference < 45 else 0
 
-  # ----------------------------------------------------- #
+  # --------------------------- Center --------------------------- #
 
   # reward if close to center line
 
   # when at 50% of the track width, the reward is 1/e~0.37
   center_reward = np.exp(-16*(distance_from_center/track_width)**2) if distance_from_center < track_width/2 else 0
 
-  # ----------------------------------------------------- #
+  # --------------------------- Speed --------------------------- #
 
   # reward for speed
-  ideal_speed = 1
+  ideal_speed = 0.67
 
   # when speed deviates from ideal_speed by 0.5, reward is 1/e~0.37
   speed_reward = np.exp(-4*(ideal_speed-speed)**2) if speed > 0 else 0
 
-  # ----------------------------------------------------- #
+  # --------------------------- Total --------------------------- #
   
   # print('track_direction:', track_direction)
   # print('heading_direction:', heading_direction)
