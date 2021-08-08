@@ -1,6 +1,6 @@
 __pycache__/
-track_widths.npy
+*.npy
 *.png
-test*
-deprecated/
 *.txt
+deprecated/
+test/
