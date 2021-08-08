@@ -1,6 +1,7 @@
 # --------------------------- Info --------------------------- #
-# This is a tool used to process waypoints that were saved as .npy files. 
-# It will create inner and outer points along the track
+
+# This is a tool used to process waypoints from the tracks.json file
+# It will create right and left points along the track and save them as .npy files
 #
 # Example: python process_tracks.py --track_name reinvent2018
 # 
@@ -23,7 +24,7 @@ for track_name in tracks:
   if (track_width <= 0):
     print('Track width for %s track is <= 0, resolve in tracks.json before continuing' % track_width)
 
-  # ------------- Calculate Inner and Outer Points ------------- #
+  # -------------- Calculate Right and Left Points -------------- #
 
   rightpoints = np.zeros(waypoints.shape)
   leftpoints = np.zeros(waypoints.shape)
