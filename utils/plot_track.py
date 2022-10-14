@@ -68,6 +68,6 @@ for i in range(len(waypoints)):
 
 # ------------------------ Save Image ------------------------ #
 
-os.makedirs('%s/plots' % os.path.abspath(os.path.join(dir_name, '..')), exist_ok=True)
-plt.savefig('%s/../plots/%s_track.png' % (dir_name, track_name))
-print('Image saved as %s_track.png' % track_name)
+os.makedirs('%s/plots/tracks' % os.path.abspath(os.path.join(dir_name, '..')), exist_ok=True)
+plt.savefig('%s/../plots/tracks/%s.png' % (dir_name, track_name))
+print('Image saved as plots/tracks/%s.png' % track_name)

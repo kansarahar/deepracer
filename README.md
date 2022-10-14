@@ -6,7 +6,7 @@
 First ensure that you have [python3 with pip (a package manager for python) installed](https://www.python.org/downloads/).
 
 ```
-pip install argparse numpy matplotlib shapely
+pip install argparse numpy matplotlib shapely seaborn
 ```
 
 If you are working on windows, I strongly recommend installing   [7-zip](https://www.7-zip.org/) to help unzip files extracted from the deepracer simulation logs.
@@ -42,7 +42,7 @@ This is a tool to plot a graph of any of the tracks you have saved and processed
 ```bash
 python utils/plot_track.py --track_name reinvent2018
 ```
-You should see a new directory called `plots/` with a scatterplot image of the reInvent 2018 track inside.
+You should see a new directory called `plots/tracks` with a scatterplot image of the reInvent 2018 track inside.
 
 For a full list of arguments, run:
 ```
@@ -55,10 +55,25 @@ This is a tool to create, save, and plot the optimal path around the track via t
 ```bash
 python utils/optimal_path.py --track_name reinvent2018
 ```
-After some time, you should see a new image under `plots/reinvent2018_optimal.png` with a scatterplot image of the reInvent 2018 track inside. You should also see a `tracks/optimal_track_points/reinvent2018.npy` file as well. You can later load this file into a numpy array, print it, and copy/paste it into your reward function to use however you see fit.
+After some time, you should see a new image under `plots/optimal_paths/reinvent2018.png` with a scatterplot image of the reInvent 2018 track inside. You should also see a `tracks/optimal_track_points/reinvent2018.npy` file as well. You can later load this file into a numpy array, print it, and copy/paste it into your reward function to use however you see fit.
 
 For a full list of arguments, run:
 ```
 python utils/optimal_path.py --help
 ```
 
+### optimal_action_space.py
+
+This is a tool to create and visualize the speed and steering angles around the optimal path created in the previous step. Again, the details of this algorithm aren't critical to knowing how to use this script. Try running:
+```bash
+python utils/optimal_action_space.py --track_name reinvent2018
+```
+
+This will create two plots: one under `plots/speed_maps/` and one under `plots/action_space/`. The first describes the optimal speed at each point along the calculated optimal racing line. The second is a scatter plot of the calculated steering angles vs the calculated speeds. Use this scatterplot to determine your action space.
+
+This also creates two .npy files under the new `action_space/steering_angles` and `action_space/velocities` directories, and they just contain the calculated optimal speed and steering angles as numpy arrays. These can be used for further analysis if desired.
+
+For a full list of arguments, run:
+```
+python utils/optimal_action_space.py --help
+```
