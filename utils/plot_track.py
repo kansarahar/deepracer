@@ -68,6 +68,7 @@ for i in range(len(waypoints)):
 
 # ------------------------ Save Image ------------------------ #
 
+plt.axis('scaled')
 os.makedirs('%s/plots/tracks' % os.path.abspath(os.path.join(dir_name, '..')), exist_ok=True)
 plt.savefig('%s/../plots/tracks/%s.png' % (dir_name, track_name))
 print('Image saved as plots/tracks/%s.png' % track_name)

@@ -136,6 +136,7 @@ for i in range(len(points)):
   plt.scatter(outer_line[i][0], outer_line[i][1], c='blue')
   plt.scatter(race_line[i][0], race_line[i][1], c='black')
 
+plt.axis('scaled')
 os.makedirs('%s/plots/optimal_paths' % os.path.abspath(os.path.join(dir_name, '..')), exist_ok=True)
 plt.savefig('%s/../plots/optimal_paths/%s.png' % (dir_name, track_name))
 print('Image saved as plots/optimal_paths/%s.png' % track_name)

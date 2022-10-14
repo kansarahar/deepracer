@@ -34,8 +34,8 @@ for track_name in track_data:
 
     # points contains waypoints, innerpoints, and outerpoints
     points[i][0:2] = waypoints[i]
-    points[i][2:4] = waypoints[i] - perp*track_width/2
-    points[i][4:6] = waypoints[i] + perp*track_width/2
+    points[i][2:4] = waypoints[i] - perp*(track_width - 0.2)/2 # -0.2 to account for car width
+    points[i][4:6] = waypoints[i] + perp*(track_width - 0.2)/2
   
 
   # --------------------------- Save --------------------------- #

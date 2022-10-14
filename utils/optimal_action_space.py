@@ -134,6 +134,7 @@ print(f"Total time for track, if racing line and speeds are followed perfectly: 
 
 fig, ax = plt.subplots()
 ax = sns.scatterplot(x=[i[0] for i in race_line], y=[i[1] for i in race_line], hue=velocities, palette="vlag").set_title("Optimal Velocity Heatmap")
+plt.axis('scaled')
 os.makedirs('%s/plots/speed_maps' % os.path.abspath(os.path.join(dir_name, '..')), exist_ok=True)
 plt.savefig('%s/../plots/speed_maps/%s.png' % (dir_name, track_name))
 print('Image saved as plots/speed_maps/%s.png' % track_name)
