@@ -1,6 +1,5 @@
 __pycache__/
 *.npy
 *.png
-*.txt
-deprecated/
-test/
+plots/
+tracks/
