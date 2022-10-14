@@ -8,26 +8,22 @@
 # Type `python process_tracks.py --help` for more help
 
 import os
+import sys
 import json
 import numpy as np
+from track_data import track_data
 
-tracks = {}
-dir_name = os.path.dirname(os.path.abspath(__file__))
-with open('%s/../tracks/tracks.json' % dir_name) as json_file:
-  tracks = json.load(json_file)
+for track_name in track_data:
 
-for track_name in tracks:
-
-  track_width = tracks[track_name]['width']
-  waypoints = np.array(tracks[track_name]['waypoints'])
+  track_width = track_data[track_name]['width']
+  waypoints = np.array(track_data[track_name]['waypoints'])
 
   if (track_width <= 0):
     print('Track width for %s track is <= 0, resolve in tracks.json before continuing' % track_width)
 
   # -------------- Calculate Right and Left Points -------------- #
-
-  rightpoints = np.zeros(waypoints.shape)
-  leftpoints = np.zeros(waypoints.shape)
+  
+  points = np.zeros((len(waypoints), 6));
   for i in range(len(waypoints)):
     curr_point = i
     next_point = i+1 if i+1 < len(waypoints) else 0
@@ -35,21 +31,18 @@ for track_name in tracks:
     direction = waypoints[next_point]-waypoints[prev_point]
     direction = direction/np.linalg.norm(direction)
     perp = np.array([direction[1], -1*direction[0]])
-    rightpoints[i] = waypoints[i] + perp*track_width/2
-    leftpoints[i] = waypoints[i] - perp*track_width/2
+
+    # points contains waypoints, innerpoints, and outerpoints
+    points[i][0:2] = waypoints[i]
+    points[i][2:4] = waypoints[i] - perp*track_width/2
+    points[i][4:6] = waypoints[i] + perp*track_width/2
+  
 
   # --------------------------- Save --------------------------- #
-
+  
+  dir_name = os.path.dirname(os.path.abspath(__file__))
   path = os.path.abspath(os.path.join(dir_name, '..', 'tracks'))
-  os.makedirs('%s/track_waypoints' % path, exist_ok=True)
-  os.makedirs('%s/track_rightpoints' % path, exist_ok=True)
-  os.makedirs('%s/track_leftpoints' % path, exist_ok=True)
+  os.makedirs('%s/track_points' % path, exist_ok=True)
 
-  np.save(os.path.join(path, 'track_waypoints', '%s.npy' % track_name), waypoints)
-  print('Saved waypoints for %s track under %s' % (track_name, os.path.relpath(path)))
-  
-  np.save(os.path.join(path, 'track_rightpoints', '%s.npy' % track_name), rightpoints)
-  print('Saved rightpoints for %s track under %s' % (track_name, os.path.relpath(path)))
-  
-  np.save(os.path.join(path, 'track_leftpoints', '%s.npy' % track_name), leftpoints)
-  print('Saved leftpoints for %s track under %s' % (track_name, os.path.relpath(path)))
+  np.save(os.path.join(path, 'track_points', '%s.npy' % track_name), points)
+  print('Saved points for %s track under %s' % (track_name, os.path.relpath(path)))
