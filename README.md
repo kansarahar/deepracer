@@ -77,3 +77,7 @@ For a full list of arguments, run:
 ```
 python utils/optimal_action_space.py --help
 ```
+
+### clean.py
+
+Used for cleaning up tracks, plots, and action_space directories
