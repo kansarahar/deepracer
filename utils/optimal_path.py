@@ -16,6 +16,7 @@ args = parser.parse_args()
 track_name, xi_iterations, line_iterations = args.track_name[0], args.xi_iterations, args.line_iterations
 
 # Get points from .npy files
+dir_name = os.path.dirname(os.path.abspath(__file__))
 points = np.load('%s/../tracks/track_points/%s.npy' % (dir_name, track_name))
 
 
@@ -113,11 +114,10 @@ for i in range(line_iterations):
 
 # ------------------------ Save and Plot Optimal Path ------------------------- #
 
-dir_name = os.path.dirname(os.path.abspath(__file__))
 path = os.path.abspath(os.path.join(dir_name, '..', 'tracks'))
 os.makedirs('%s/optimal_track_waypoints' % path, exist_ok=True)
 
-np.save(os.path.join(path, 'optimal_track_waypoints', '%s.npy' % track_name), race_line)
+np.save(os.path.join(path, 'optimal_track_points', '%s.npy' % track_name), race_line)
 print('Saved optimal track waypoints for %s track under %s' % (track_name, os.path.relpath(path)))
 
 for i in range(len(points)):
