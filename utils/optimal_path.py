@@ -105,7 +105,6 @@ inner_line = np.array(points[:, 2:4])
 outer_line = np.array(points[:, 4:6])
 
 race_line = copy.deepcopy(center_line[:])
-print(len(center_line), len(race_line))
 for i in range(line_iterations):
   race_line = improve_race_line(race_line, inner_line, outer_line)
   if i % 100 == 0:
@@ -115,7 +114,7 @@ for i in range(line_iterations):
 # ------------------------ Save and Plot Optimal Path ------------------------- #
 
 path = os.path.abspath(os.path.join(dir_name, '..', 'tracks'))
-os.makedirs('%s/optimal_track_waypoints' % path, exist_ok=True)
+os.makedirs('%s/optimal_track_points' % path, exist_ok=True)
 
 np.save(os.path.join(path, 'optimal_track_points', '%s.npy' % track_name), race_line)
 print('Saved optimal track waypoints for %s track under %s' % (track_name, os.path.relpath(path)))

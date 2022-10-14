@@ -34,7 +34,7 @@ python utils/process_tracks.py
 
 and you will see some new .npy files created under the new `tracks/track_points` directory. These files contain numpy arrays of waypoints of each of the tracks, as well as the computed boundaries of the tracks. These are what every other file in this project will be using for analysis / further processing.
 
-Whenever you make changes to `tracks/tracks.json`, ensure that you run the `utils/process_tracks.py` script in order for those changes to be accurately represented.
+Whenever you make changes to `utils/track_data.py`, ensure that you run the `utils/process_tracks.py` script in order for those changes to be accurately represented.
 
 ### plot_track.py
 
@@ -61,3 +61,5 @@ For a full list of arguments, run:
 ```
 python utils/optimal_path.py --help
 ```
+
+Note: This currently only works with tracks where the waypoints are going counterclockwise. To use this algorithm on a clockwise track, swap the inner and outer points. 
