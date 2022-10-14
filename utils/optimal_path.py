@@ -104,6 +104,17 @@ center_line = np.array(points[:, 0:2])
 inner_line = np.array(points[:, 2:4])
 outer_line = np.array(points[:, 4:6])
 
+# if the track direction is clockwise, swap inner and outer lines
+inner_line_length = 0
+outer_line_length = 0
+for i in range(len(points)-1):
+  inner_line_length += np.sqrt((inner_line[i+1][0] - inner_line[i][0])**2 + (inner_line[i+1][1] - inner_line[i][1])**2)
+  outer_line_length += np.sqrt((outer_line[i+1][0] - outer_line[i][0])**2 + (outer_line[i+1][1] - outer_line[i][1])**2)
+if (inner_line_length > outer_line_length):
+  outer_line = np.array(points[:, 2:4])
+  inner_line = np.array(points[:, 4:6])
+
+# iteratively improve the race line
 race_line = copy.deepcopy(center_line[:])
 for i in range(line_iterations):
   race_line = improve_race_line(race_line, inner_line, outer_line)

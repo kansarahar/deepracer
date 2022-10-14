@@ -62,4 +62,3 @@ For a full list of arguments, run:
 python utils/optimal_path.py --help
 ```
 
-Note: This currently only works with tracks where the waypoints are going counterclockwise. To use this algorithm on a clockwise track, swap the inner and outer points. 
