@@ -17,15 +17,14 @@ from track_data import track_data
 dir_name = os.path.dirname(os.path.abspath(__file__))
 
 parser = argparse.ArgumentParser(description='A tool used to process waypoints obtained from a .npy file')
-parser.add_argument('--track_name', type=str, nargs=1, help='OPTIONAL - name of the track, example: reinvent2018')
+parser.add_argument('--track_name', type=str, nargs=1, default=[''], help='OPTIONAL - name of the track, example: reinvent2018. If not provided, all track plots will be produced.')
 parser.add_argument('--number', action='store_true', help='OPTIONAL - displays the number of the waypoint next to every 10 waypoints')
 parser.add_argument('--meter', action='store_true', help='OPTIONAL - displays the meters traveled across the track')
 parser.add_argument('--line', action='store_true', help='OPTIONAL - plot as line graph instead of scatter')
 
 args = parser.parse_args()
 
-show_numbers, show_meters, line_graph = args.number, args.meter, args.line
-track_name = args.track_name[0] if args.track_name else None
+track_name, show_numbers, show_meters, line_graph = args.track_name[0], args.number, args.meter, args.line
 
 # ------------------------ Plot Main ------------------------- #
 

@@ -8,16 +8,14 @@ from shapely.geometry import Point, Polygon
 from shapely.geometry.polygon import LinearRing, LineString
 
 parser = argparse.ArgumentParser(description='A tool used to process waypoints obtained from a .npy file')
-parser.add_argument('--track_name', type=str, nargs=1, help='REQUIRED - Name of the track, example: reinvent2018', required=True)
+parser.add_argument('--track_name', type=str, nargs=1, default=[''], help='OPTIONAL - Name of the track, example: reinvent2018. If not specified, all tracks will be optimized.')
 parser.add_argument('--xi_iterations', dest='xi_iterations', type=int, default=4, help='OPTIONAL - Number of times to iterate each new race line point. Keep this at 3-8 for best balance of performance and desired result. (default: 4)')
 parser.add_argument('--line_iterations', dest='line_iterations', type=int, default=500, help='OPTIONAL - Number of times to scan the entire race track to iterate. 500 will get a good start, 1500 will be closer to optimal result. (default: 500)')
 
 args = parser.parse_args()
 track_name, xi_iterations, line_iterations = args.track_name[0], args.xi_iterations, args.line_iterations
 
-# Get points from .npy files
 dir_name = os.path.dirname(os.path.abspath(__file__))
-points = np.load('%s/../tracks/track_points/%s.npy' % (dir_name, track_name))
 
 
 # ------------------------ Calculation Functions ------------------------- #
@@ -100,47 +98,56 @@ def improve_race_line(old_line, inner_border, outer_border):
 
 # ------------------------ Race Line Calculation ------------------------- #
 
-center_line = np.array(points[:, 0:2])
-inner_line = np.array(points[:, 2:4])
-outer_line = np.array(points[:, 4:6])
+def calculate_and_plot_race_line(track_name):
+  print('Calculating optimal path for %s track' % track_name)
+  points = np.load('%s/../tracks/track_points/%s.npy' % (dir_name, track_name))
+  center_line = np.array(points[:, 0:2])
+  inner_line = np.array(points[:, 2:4])
+  outer_line = np.array(points[:, 4:6])
 
-# if the track direction is clockwise, swap inner and outer lines
-inner_line_length = 0
-outer_line_length = 0
-for i in range(len(points)-1):
-  inner_line_length += np.sqrt((inner_line[i+1][0] - inner_line[i][0])**2 + (inner_line[i+1][1] - inner_line[i][1])**2)
-  outer_line_length += np.sqrt((outer_line[i+1][0] - outer_line[i][0])**2 + (outer_line[i+1][1] - outer_line[i][1])**2)
-if (inner_line_length > outer_line_length):
-  outer_line = np.array(points[:, 2:4])
-  inner_line = np.array(points[:, 4:6])
+  # if the track direction is clockwise, swap inner and outer lines
+  inner_line_length = 0
+  outer_line_length = 0
+  for i in range(len(points)-1):
+    inner_line_length += np.sqrt((inner_line[i+1][0] - inner_line[i][0])**2 + (inner_line[i+1][1] - inner_line[i][1])**2)
+    outer_line_length += np.sqrt((outer_line[i+1][0] - outer_line[i][0])**2 + (outer_line[i+1][1] - outer_line[i][1])**2)
+  if (inner_line_length > outer_line_length):
+    outer_line = np.array(points[:, 2:4])
+    inner_line = np.array(points[:, 4:6])
 
-# iteratively improve the race line
-race_line = copy.deepcopy(center_line[:])
-for i in range(line_iterations):
-  race_line = improve_race_line(race_line, inner_line, outer_line)
-  if i % 100 == 0:
-    print('Iteration %s' % i)
+  # iteratively improve the race line
+  race_line = copy.deepcopy(center_line[:])
+  for i in range(line_iterations):
+    race_line = improve_race_line(race_line, inner_line, outer_line)
+    if i % 100 == 0:
+      print('Iteration %s' % i)
 
 
-# ------------------------ Save and Plot Optimal Path ------------------------- #
+  # ------------------------ Save and Plot Optimal Path ------------------------- #
 
-path = os.path.abspath(os.path.join(dir_name, '..', 'tracks'))
-os.makedirs('%s/optimal_track_points' % path, exist_ok=True)
+  path = os.path.abspath(os.path.join(dir_name, '..', 'tracks'))
+  os.makedirs('%s/optimal_track_points' % path, exist_ok=True)
 
-np.save(os.path.join(path, 'optimal_track_points', '%s.npy' % track_name), race_line)
-print('Saved optimal track waypoints for %s track under %s' % (track_name, os.path.relpath(path)))
+  np.save(os.path.join(path, 'optimal_track_points', '%s.npy' % track_name), race_line)
+  print('Saved optimal track waypoints for %s track under %s/' % (track_name, os.path.relpath(path)))
 
-for i in range(len(points)):
-  plt.scatter(inner_line[i][0], inner_line[i][1], c='red')
-  plt.scatter(center_line[i][0], center_line[i][1], c='green')
-  plt.scatter(outer_line[i][0], outer_line[i][1], c='blue')
-  plt.scatter(race_line[i][0], race_line[i][1], c='black')
+  for i in range(len(points)):
+    plt.scatter(inner_line[i][0], inner_line[i][1], c='red')
+    plt.scatter(center_line[i][0], center_line[i][1], c='green')
+    plt.scatter(outer_line[i][0], outer_line[i][1], c='blue')
+    plt.scatter(race_line[i][0], race_line[i][1], c='black')
 
-plt.axis('scaled')
-os.makedirs('%s/plots/optimal_paths' % os.path.abspath(os.path.join(dir_name, '..')), exist_ok=True)
-plt.savefig('%s/../plots/optimal_paths/%s.png' % (dir_name, track_name))
-print('Image saved as plots/optimal_paths/%s.png' % track_name)
+  plt.axis('scaled')
+  os.makedirs('%s/plots/optimal_paths' % os.path.abspath(os.path.join(dir_name, '..')), exist_ok=True)
+  plt.savefig('%s/../plots/optimal_paths/%s.png' % (dir_name, track_name))
+  plt.clf()
+  print('Image saved as plots/optimal_paths/%s.png' % track_name)
 
+if (track_name):
+  calculate_and_plot_race_line(track_name)
+else:
+  for track in os.listdir('%s/../tracks/track_points' % dir_name):
+    calculate_and_plot_race_line(track[:-4])
 
 
 

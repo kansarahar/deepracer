@@ -59,7 +59,7 @@ def reward_function(params):
   steering_difference = steering_difference if steering_difference < 180 else 360-steering_difference
 
   # when steering difference is 4, the reward is 1/e~0.37
-  steering_reward = np.exp(-0.00625*steering_difference**2) if steering_difference < 30 else 0
+  steering_reward = np.exp(-0.0625*steering_difference**2) if steering_difference < 30 else 0
 
   # --------------------------- Center --------------------------- #
 

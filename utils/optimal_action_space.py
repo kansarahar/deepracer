@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 
 parser = argparse.ArgumentParser(description='A tool used to process waypoints obtained from a .npy file')
-parser.add_argument('--track_name', type=str, nargs=1, help='REQUIRED - Name of the track, example: reinvent2018', required=True)
+parser.add_argument('--track_name', type=str, nargs=1, default=[''], help='OPTIONAL - Name of the track, example: reinvent2018. If not provided, action spaces will be computed for all tracks.')
 parser.add_argument('--look_ahead_points', dest='look_ahead_points', type=int, default=0, help='OPTIONAL - How far the algorithm look ahead to see when to brake. The higher the number, the earlier it will slow down. (default: 0)')
 parser.add_argument('--min_speed', dest='min_speed', type=float, default=1, help='OPTIONAL - Minimum speed of the car (default: 1)')
 parser.add_argument('--max_speed', dest='max_speed', type=float, default=4, help='OPTIONAL - Maximum speed of the car (default: 4)')
@@ -18,7 +18,6 @@ track_name, look_ahead_points, min_speed, max_speed = args.track_name[0], args.l
 
 # Get points from .npy files
 dir_name = os.path.dirname(os.path.abspath(__file__))
-race_line = np.load('%s/../tracks/optimal_track_points/%s.npy' % (dir_name, track_name))
 
 # ------------------------ Calculation Functions ------------------------- #
 
@@ -119,72 +118,88 @@ def dist_2_points(x1, x2, y1, y2):
 
 # all functions taken directly from https://github.com/cdthompson/deepracer-k1999-race-lines/blob/master/Race-Line-Calculation.ipynb
 
-velocities = optimal_velocity(race_line, min_speed, max_speed, look_ahead_points)
-distance_to_prev = []
-for i in range(len(race_line)):
-    indexes = circle_indexes(race_line, i, add_index_1=-1, add_index_2=0)[0:2]
-    coords = [race_line[indexes[0]], race_line[indexes[1]]]
-    dist_to_prev = dist_2_points(x1=coords[0][0], x2=coords[1][0], y1=coords[0][1], y2=coords[1][1])
-    distance_to_prev.append(dist_to_prev)
-    
-time_to_prev = [(distance_to_prev[i]/velocities[i]) for i in range(len(race_line))]
+def calculate_optimal_speeds(track_name):
+  race_line = np.load('%s/../tracks/optimal_track_points/%s.npy' % (dir_name, track_name))
+  velocities = optimal_velocity(race_line, min_speed, max_speed, look_ahead_points)
+  distance_to_prev = []
+  for i in range(len(race_line)):
+      indexes = circle_indexes(race_line, i, add_index_1=-1, add_index_2=0)[0:2]
+      coords = [race_line[indexes[0]], race_line[indexes[1]]]
+      dist_to_prev = dist_2_points(x1=coords[0][0], x2=coords[1][0], y1=coords[0][1], y2=coords[1][1])
+      distance_to_prev.append(dist_to_prev)
+      
+  time_to_prev = [(distance_to_prev[i]/velocities[i]) for i in range(len(race_line))]
 
-total_time = sum(time_to_prev)
-print(f"Total time for track, if racing line and speeds are followed perfectly: {total_time} s")
+  total_time = sum(time_to_prev)
+  print(f"Total time for track, if racing line and speeds are followed perfectly: {total_time} s")
 
-fig, ax = plt.subplots()
-ax = sns.scatterplot(x=[i[0] for i in race_line], y=[i[1] for i in race_line], hue=velocities, palette="vlag").set_title("Optimal Velocity Heatmap")
-plt.axis('scaled')
-os.makedirs('%s/plots/speed_maps' % os.path.abspath(os.path.join(dir_name, '..')), exist_ok=True)
-plt.savefig('%s/../plots/speed_maps/%s.png' % (dir_name, track_name))
-print('Image saved as plots/speed_maps/%s.png' % track_name)
+  fig, ax = plt.subplots()
+  ax = sns.scatterplot(x=[i[0] for i in race_line], y=[i[1] for i in race_line], hue=velocities, palette="vlag").set_title("Optimal Velocity Heatmap")
+  plt.axis('scaled')
+  os.makedirs('%s/plots/speed_maps' % os.path.abspath(os.path.join(dir_name, '..')), exist_ok=True)
+  plt.savefig('%s/../plots/speed_maps/%s.png' % (dir_name, track_name))
+  plt.clf()
+  print('Image saved as plots/speed_maps/%s.png' % track_name)
 
 
 # ------------------------ Optimal Action Space Calculation and Visualization ------------------------- #
 
-radius = []
-for i in range(len(race_line)):
-  indexes = circle_indexes(race_line, i, add_index_1=-1, add_index_2=1) # CHANGE BACK? 1;2
-  coords = [race_line[indexes[0]], race_line[indexes[1]], race_line[indexes[2]]]
-  radius.append(circle_radius(coords))
+def calculate_action_space(track_name):
+  race_line = np.load('%s/../tracks/optimal_track_points/%s.npy' % (dir_name, track_name))
+  velocities = optimal_velocity(race_line, min_speed, max_speed, look_ahead_points)
+  
+  radius = []
+  for i in range(len(race_line)):
+    indexes = circle_indexes(race_line, i, add_index_1=-1, add_index_2=1) # CHANGE BACK? 1;2
+    coords = [race_line[indexes[0]], race_line[indexes[1]], race_line[indexes[2]]]
+    radius.append(circle_radius(coords))
 
-# Calculate curve direction
-left_curve = []
-for i in range(len(race_line)):
-  indexes = circle_indexes(race_line, i, add_index_1=-1, add_index_2=1)
-  coords = [race_line[indexes[1]], race_line[indexes[0]], race_line[indexes[2]]]
-  left_curve.append(is_left_curve(coords))
+  # Calculate curve direction
+  left_curve = []
+  for i in range(len(race_line)):
+    indexes = circle_indexes(race_line, i, add_index_1=-1, add_index_2=1)
+    coords = [race_line[indexes[1]], race_line[indexes[0]], race_line[indexes[2]]]
+    left_curve.append(is_left_curve(coords))
 
-# Calculate radius with + and - for direction (+ is left, - is right)
-radius_direction = []
-for i in range(len(race_line)):
-  radius_with_direction = radius[i]
-  if left_curve[i] == False:
-    radius_with_direction *= -1
-  radius_direction.append(radius_with_direction)
+  # Calculate radius with + and - for direction (+ is left, - is right)
+  radius_direction = []
+  for i in range(len(race_line)):
+    radius_with_direction = radius[i]
+    if left_curve[i] == False:
+      radius_with_direction *= -1
+    radius_direction.append(radius_with_direction)
 
-# Calculate steering with + and -
-dist_wheels_front_back = 0.165 # meters
-steering = []
-for i in range(len(race_line)):
-  steer = math.degrees(math.asin(dist_wheels_front_back/radius_direction[i]))
-  steering.append(steer)
+  # Calculate steering with + and -
+  dist_wheels_front_back = 0.165 # meters
+  steering = []
+  for i in range(len(race_line)):
+    steer = math.degrees(math.asin(dist_wheels_front_back/radius_direction[i]))
+    steering.append(steer)
 
-velocities = np.array(velocities)
-steering = np.array(steering)
+  velocities = np.array(velocities)
+  steering = np.array(steering)
 
-path = os.path.abspath(os.path.join(dir_name, '..', 'action_space'))
-os.makedirs('%s/velocities' % path, exist_ok=True)
-os.makedirs('%s/steering_angles' % path, exist_ok=True)
+  path = os.path.abspath(os.path.join(dir_name, '..', 'action_space'))
+  os.makedirs('%s/velocities' % path, exist_ok=True)
+  os.makedirs('%s/steering_angles' % path, exist_ok=True)
 
-np.save(os.path.join(path, 'velocities', '%s.npy' % track_name), velocities)
-print('Saved optimal velocities for %s track under %s' % (track_name, os.path.relpath(path)))
-np.save(os.path.join(path, 'steering_angles', '%s.npy' % track_name), steering)
-print('Saved optimal steering angles for %s track under %s' % (track_name, os.path.relpath(path)))
+  np.save(os.path.join(path, 'velocities', '%s.npy' % track_name), velocities)
+  print('Saved optimal velocities for %s track under %s' % (track_name, os.path.relpath(path)))
+  np.save(os.path.join(path, 'steering_angles', '%s.npy' % track_name), steering)
+  print('Saved optimal steering angles for %s track under %s' % (track_name, os.path.relpath(path)))
 
-fig, ax = plt.subplots()
-ax = sns.scatterplot(data={'velocity': velocities, 'steering': steering }, x="steering", y="velocity")
-ax.set_title(f"With lookahead: {look_ahead_points}")
-os.makedirs('%s/plots/action_space' % os.path.abspath(os.path.join(dir_name, '..')), exist_ok=True)
-plt.savefig('%s/../plots/action_space/%s.png' % (dir_name, track_name))
-print('Image saved as plots/action_space/%s.png' % track_name)
+  fig, ax = plt.subplots()
+  ax = sns.scatterplot(data={'velocity': velocities, 'steering': steering }, x="steering", y="velocity")
+  ax.set_title(f"With lookahead: {look_ahead_points}")
+  os.makedirs('%s/plots/action_space' % os.path.abspath(os.path.join(dir_name, '..')), exist_ok=True)
+  plt.savefig('%s/../plots/action_space/%s.png' % (dir_name, track_name))
+  plt.clf()
+  print('Image saved as plots/action_space/%s.png' % track_name)
+
+if (track_name):
+  calculate_optimal_speeds(track_name)
+  calculate_action_space(track_name)
+else:
+  for track in os.listdir('%s/../tracks/optimal_track_points' % dir_name):
+    calculate_optimal_speeds(track[:-4])
+    calculate_action_space(track[:-4])
