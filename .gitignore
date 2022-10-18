@@ -1,5 +1,7 @@
 __pycache__/
 *.npy
 *.png
+*.txt
 plots/
 tracks/
+action_space/
