@@ -8,12 +8,12 @@ from shapely.geometry import Point, Polygon
 from shapely.geometry.polygon import LinearRing, LineString
 
 parser = argparse.ArgumentParser(description='A tool used to process waypoints obtained from a .npy file')
-parser.add_argument('--track_name', type=str, nargs=1, default=[''], help='OPTIONAL - Name of the track, example: reinvent2018. If not specified, all tracks will be optimized.')
+parser.add_argument('--track_names', type=str, nargs='*', default=[], help='OPTIONAL - Name of the track or tracks, example: reinvent2018. If not specified, all tracks will be optimized.')
 parser.add_argument('--xi_iterations', dest='xi_iterations', type=int, default=4, help='OPTIONAL - Number of times to iterate each new race line point. Keep this at 3-8 for best balance of performance and desired result. (default: 4)')
 parser.add_argument('--line_iterations', dest='line_iterations', type=int, default=500, help='OPTIONAL - Number of times to scan the entire race track to iterate. 500 will get a good start, 1500 will be closer to optimal result. (default: 500)')
 
 args = parser.parse_args()
-track_name, xi_iterations, line_iterations = args.track_name[0], args.xi_iterations, args.line_iterations
+track_names, xi_iterations, line_iterations = args.track_names, args.xi_iterations, args.line_iterations
 
 dir_name = os.path.dirname(os.path.abspath(__file__))
 
@@ -143,8 +143,9 @@ def calculate_and_plot_race_line(track_name):
   plt.clf()
   print('Image saved as plots/optimal_paths/%s.png' % track_name)
 
-if (track_name):
-  calculate_and_plot_race_line(track_name)
+if (track_names):
+  for track in track_names:
+    calculate_and_plot_race_line(track)
 else:
   for track in os.listdir('%s/../tracks/track_points' % dir_name):
     calculate_and_plot_race_line(track[:-4])

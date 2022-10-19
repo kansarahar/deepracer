@@ -1,7 +1,7 @@
 # --------------------------- Info --------------------------- #
 # This is a tool used to plot the processed track information
 #
-# Example: python plot_track.py --track_name reinvent2018
+# Example: python plot_track.py --track_names reinvent2018
 # 
 # Type `python plot_track.py --help` for more information
 #
@@ -17,14 +17,14 @@ from track_data import track_data
 dir_name = os.path.dirname(os.path.abspath(__file__))
 
 parser = argparse.ArgumentParser(description='A tool used to process waypoints obtained from a .npy file')
-parser.add_argument('--track_name', type=str, nargs=1, default=[''], help='OPTIONAL - name of the track, example: reinvent2018. If not provided, all track plots will be produced.')
+parser.add_argument('--track_names', type=str, nargs='*', default=[], help='OPTIONAL - name of the track or tracks, example: reinvent2018. If not provided, all track plots will be produced.')
 parser.add_argument('--number', action='store_true', help='OPTIONAL - displays the number of the waypoint next to every 10 waypoints')
 parser.add_argument('--meter', action='store_true', help='OPTIONAL - displays the meters traveled across the track')
 parser.add_argument('--line', action='store_true', help='OPTIONAL - plot as line graph instead of scatter')
 
 args = parser.parse_args()
 
-track_name, show_numbers, show_meters, line_graph = args.track_name[0], args.number, args.meter, args.line
+track_names, show_numbers, show_meters, line_graph = args.track_names, args.number, args.meter, args.line
 
 # ------------------------ Plot Main ------------------------- #
 
@@ -77,8 +77,9 @@ def plot_track(track_name):
   plt.clf()
   print('Image saved as plots/tracks/%s.png' % track_name)
 
-if (track_name):
-  plot_track(track_name)
+if (track_names):
+  for track in track_names:
+    plot_track(track)
 else:
   for track in track_data:
     plot_track(track)

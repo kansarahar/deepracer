@@ -7,14 +7,14 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 
 parser = argparse.ArgumentParser(description='A tool used to process waypoints obtained from a .npy file')
-parser.add_argument('--track_name', type=str, nargs=1, default=[''], help='OPTIONAL - Name of the track, example: reinvent2018. If not provided, action spaces will be computed for all tracks.')
+parser.add_argument('--track_names', type=str, nargs='*', default=[], help='OPTIONAL - Name of the track or tracks, example: reinvent2018. If not provided, action spaces will be computed for all tracks.')
 parser.add_argument('--look_ahead_points', dest='look_ahead_points', type=int, default=0, help='OPTIONAL - How far the algorithm look ahead to see when to brake. The higher the number, the earlier it will slow down. (default: 0)')
 parser.add_argument('--min_speed', dest='min_speed', type=float, default=1, help='OPTIONAL - Minimum speed of the car (default: 1)')
 parser.add_argument('--max_speed', dest='max_speed', type=float, default=4, help='OPTIONAL - Maximum speed of the car (default: 4)')
 
 
 args = parser.parse_args()
-track_name, look_ahead_points, min_speed, max_speed = args.track_name[0], args.look_ahead_points, args.min_speed, args.max_speed
+track_names, look_ahead_points, min_speed, max_speed = args.track_names, args.look_ahead_points, args.min_speed, args.max_speed
 
 # Get points from .npy files
 dir_name = os.path.dirname(os.path.abspath(__file__))
@@ -196,9 +196,10 @@ def calculate_action_space(track_name):
   plt.clf()
   print('Image saved as plots/action_space/%s.png' % track_name)
 
-if (track_name):
-  calculate_optimal_speeds(track_name)
-  calculate_action_space(track_name)
+if (track_names):
+  for track in track_names:
+    calculate_optimal_speeds(track)
+    calculate_action_space(track)
 else:
   for track in os.listdir('%s/../tracks/optimal_track_points' % dir_name):
     calculate_optimal_speeds(track[:-4])
