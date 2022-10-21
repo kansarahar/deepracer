@@ -8,13 +8,13 @@ import seaborn as sns
 
 parser = argparse.ArgumentParser(description='A tool used to process waypoints obtained from a .npy file')
 parser.add_argument('--track_names', type=str, nargs='*', default=[], help='OPTIONAL - Name of the track or tracks, example: reinvent2018. If not provided, action spaces will be computed for all tracks.')
-parser.add_argument('--look_ahead_points', dest='look_ahead_points', type=int, default=0, help='OPTIONAL - How far the algorithm look ahead to see when to brake. The higher the number, the earlier it will slow down. (default: 0)')
+parser.add_argument('--lookahead_points', dest='lookahead_points', type=int, default=0, help='OPTIONAL - How far the algorithm look ahead to see when to brake. The higher the number, the earlier it will slow down. (default: 0)')
 parser.add_argument('--min_speed', dest='min_speed', type=float, default=1, help='OPTIONAL - Minimum speed of the car (default: 1)')
 parser.add_argument('--max_speed', dest='max_speed', type=float, default=4, help='OPTIONAL - Maximum speed of the car (default: 4)')
 
 
 args = parser.parse_args()
-track_names, look_ahead_points, min_speed, max_speed = args.track_names, args.look_ahead_points, args.min_speed, args.max_speed
+track_names, lookahead_points, min_speed, max_speed = args.track_names, args.lookahead_points, args.min_speed, args.max_speed
 
 # Get points from .npy files
 dir_name = os.path.dirname(os.path.abspath(__file__))
@@ -75,7 +75,7 @@ def optimal_velocity(track, min_speed, max_speed, look_ahead_points):
   # That value should multiplied by a constant multiple
   v_min_r = min(radius)**0.5
   constant_multiple = min_speed / v_min_r
-  print(f"Constant multiple for optimal speed: {constant_multiple}")
+  print(f"\n\nConstant multiple for optimal speed: {constant_multiple}")
 
   if look_ahead_points == 0:
     # Get the maximal velocity from radius
@@ -120,7 +120,7 @@ def dist_2_points(x1, x2, y1, y2):
 
 def calculate_optimal_speeds(track_name):
   race_line = np.load('%s/../tracks/optimal_track_points/%s.npy' % (dir_name, track_name))
-  velocities = optimal_velocity(race_line, min_speed, max_speed, look_ahead_points)
+  velocities = optimal_velocity(race_line, min_speed, max_speed, lookahead_points)
   distance_to_prev = []
   for i in range(len(race_line)):
       indexes = circle_indexes(race_line, i, add_index_1=-1, add_index_2=0)[0:2]
@@ -146,7 +146,7 @@ def calculate_optimal_speeds(track_name):
 
 def calculate_action_space(track_name):
   race_line = np.load('%s/../tracks/optimal_track_points/%s.npy' % (dir_name, track_name))
-  velocities = optimal_velocity(race_line, min_speed, max_speed, look_ahead_points)
+  velocities = optimal_velocity(race_line, min_speed, max_speed, lookahead_points)
   
   radius = []
   for i in range(len(race_line)):
@@ -190,11 +190,16 @@ def calculate_action_space(track_name):
 
   fig, ax = plt.subplots()
   ax = sns.scatterplot(data={'velocity': velocities, 'steering': steering }, x="steering", y="velocity")
-  ax.set_title(f"With lookahead: {look_ahead_points}")
+  ax.set_title(f"With lookahead: {lookahead_points}")
   os.makedirs('%s/plots/action_space' % os.path.abspath(os.path.join(dir_name, '..')), exist_ok=True)
   plt.savefig('%s/../plots/action_space/%s.png' % (dir_name, track_name))
   plt.clf()
   print('Image saved as plots/action_space/%s.png' % track_name)
+
+  print('\n\nRace Line:', race_line.tolist())
+  print('\n\nOptimal Velocities:', velocities.tolist())
+  print('\n\nOptimal Steering:', steering.tolist())
+  print('\n\n\n\n')
 
 if (track_names):
   for track in track_names:

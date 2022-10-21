@@ -20,13 +20,9 @@ AVG_SPEED = 2.5
 AVG_REWARD_PER_STEP = 0.5
 AVG_REWARD_PER_LENGTH = AVG_REWARD_PER_STEP * STEPS_PER_SECOND / AVG_SPEED
 
-HEADING_WEIGHT = 55
-CENTER_WEIGHT = 30
-SPEED_WEIGHT = 15
-PROGRESS_WEIGHT = 1
-
 def reward_function(params):
 
+  
   # ---------------------- Off-track Penalty ---------------------- #
 
   # Penalize if off track
@@ -86,7 +82,7 @@ def reward_function(params):
   ideal_speed = velocities[closest_waypoints[0]]
   speed_difference = abs(ideal_speed - speed)
   
-  # punish hard if too slow or speed is far from ideal
+  # punish hard if too slow or speed is wildly incorrect
   if speed < 0.5 or speed_difference > 1:
     return MIN_REWARD
   
@@ -107,7 +103,8 @@ def reward_function(params):
 
   # --------------------------- Total --------------------------- #
 
-  reward = HEADING_WEIGHT*heading_reward + CENTER_WEIGHT*center_reward + SPEED_WEIGHT*speed_reward + PROGRESS_WEIGHT*progress_reward
+  c = 0.3
+  reward = c + (1-c) * (steering_reward * center_reward * speed_reward) + progress_reward
   reward = reward if reward > MIN_REWARD else MIN_REWARD
   print('=============== <REWARDS> ===============')
   print('steering_reward:', steering_reward)

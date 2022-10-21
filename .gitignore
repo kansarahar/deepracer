@@ -2,6 +2,8 @@ __pycache__/
 *.npy
 *.png
 *.txt
+*.log
+*.pickle
 plots/
 tracks/
 action_space/
