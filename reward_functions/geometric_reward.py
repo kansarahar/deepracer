@@ -21,13 +21,6 @@ AVG_REWARD_PER_STEP = 0.5
 AVG_REWARD_PER_LENGTH = AVG_REWARD_PER_STEP * STEPS_PER_SECOND / AVG_SPEED
 
 def reward_function(params):
-
-  
-  # ---------------------- Off-track Penalty ---------------------- #
-
-  # Penalize if off track
-  if not params['all_wheels_on_track']:
-    return MIN_REWARD
   
   # --------------------------- Params --------------------------- #
 
@@ -49,15 +42,10 @@ def reward_function(params):
   track_vector = race_line[closest_waypoints[1]]-race_line[closest_waypoints[0]]
   track_direction = np.arctan2(track_vector[1], track_vector[0])*180/np.pi
 
-
   steering_difference = abs(steering_angle - steerings[closest_waypoints[0]])
   heading_difference = abs(track_direction-heading)
   heading_difference = heading_difference if heading_difference < 180 else 360-heading_difference
-
-  # punish hard if heading direction is way off
-  if heading_difference > 30 or steering_difference > 30:
-    return MIN_REWARD
-
+  
   # when direction difference is 20, the reward is 1/e^2 ~ 0.1
   heading_reward = np.exp(-2 * (heading_difference / 20)**2) if heading_difference < 20 else 0.1
   steering_reward = np.exp(-2 * (steering_difference / 20)**2) if steering_difference < 20 else 0.1
@@ -68,10 +56,6 @@ def reward_function(params):
   cx, cy = (race_line[closest_waypoints[0]] + race_line[closest_waypoints[1]]) / 2
   distance_from_race_line = np.sqrt((cx - x)**2 + (cy - y)**2)
   track_fraction = 2 * distance_from_race_line / track_width
-  
-  # punish hard if too far from center line
-  if 2 * distance_from_center > track_width:
-    return MIN_REWARD
 
   # when beyond 2/3 of the track width, the reward is 1/e^2 ~ 0.1
   center_reward = np.exp(-2 * (track_fraction / 0.67)**2) if track_fraction > 0.67 else 0.1
@@ -81,10 +65,6 @@ def reward_function(params):
   # difference in expected speed vs actual speed
   ideal_speed = velocities[closest_waypoints[0]]
   speed_difference = abs(ideal_speed - speed)
-  
-  # punish hard if too slow or speed is wildly incorrect
-  if speed < 0.5 or speed_difference > 1:
-    return MIN_REWARD
   
   # when speed deviates from ideal_speed by 0.67, 1/e^2 ~ 0.1
   speed_reward = np.exp(-2 * (speed_difference / 0.67)**2) if speed_difference > 0.67 else 0.1
@@ -103,9 +83,41 @@ def reward_function(params):
 
   # --------------------------- Total --------------------------- #
 
-  c = 0.3
+  c = 0.25
   reward = c + (1-c) * (steering_reward * center_reward * speed_reward) + progress_reward
   reward = reward if reward > MIN_REWARD else MIN_REWARD
+  
+  # ------------------------- Penalties ------------------------- #
+
+  penalty = 'none'
+
+  # punish hard if off track
+  if not params['all_wheels_on_track']:
+    reward = MIN_REWARD
+    penalty = 'off track'
+
+  # punish hard if steering direction is way off
+  if steering_difference > 30:
+    reward = MIN_REWARD
+    penalty = 'off steering'
+
+  # punish hard if heading direction is way off
+  if heading_difference > 30:
+    reward = MIN_REWARD
+    penalty = 'off heading'
+  
+  # punish hard if too far from center line or race line
+  if 2 * distance_from_center > track_width or track_fraction > 1:
+    reward = MIN_REWARD
+    penalty = 'off center'
+  
+  # punish hard if too slow or speed is far from ideal
+  if speed < 0.5 or speed_difference > 1:
+    reward = MIN_REWARD
+    penalty = 'off speed'
+
+  # --------------------------- Logs ---------------------------- #
+
   print('=============== <REWARDS> ===============')
   print('steering_reward:', steering_reward)
   print('heading_reward:', heading_reward)
@@ -126,8 +138,8 @@ def reward_function(params):
   print('=============== </PARAMS> ===============')
   print('=============== <MISC> ===============')
   print('track_name:', track_name)
-  print('min_speed', min_speed)
-  print('max_speed', max_speed)
+  print('min_speed:', min_speed)
+  print('max_speed:', max_speed)
   print('track_direction:', track_direction)
   print('steering_difference:', steering_difference)
   print('heading_difference:', heading_difference)
@@ -135,6 +147,7 @@ def reward_function(params):
   print('track_fraction:', track_fraction)
   print('speed_difference:', speed_difference)
   print('lookahead_points:', lookahead_points)
+  print('penalty:', penalty)
   print('=============== </MISC> ===============')
 
   return float(reward)
